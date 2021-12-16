@@ -2,7 +2,7 @@ import random
 import pandas as pd
 import numpy as np
 import random
-from copy import copy
+from copy import deepcopy
 from pprint import pprint
 
 words = set()
@@ -27,27 +27,28 @@ def to_df(cards):
     return df
 
 
-def count(hand, type):
-    ans = 0
-    for card in hand:
-        ans += type in card
-    return ans
-
-
 def eval(hand):
-    if count(hand, "land") <= 1:
+    def count(card_type):
+        ans = 0
+        if type(card_type) is str:
+            card_type = {card_type}
+        for card in hand:
+            ans += bool(card_type & card)
+        return ans
+
+    if count("land") <= 1:
         return "mana screw"
-    if count(hand, "nonland") <= 2:
+    if count("nonland") <= 2:
         return "mana flood"
-    if count(hand, "plain") == 0:
+    if count("plain") == 0:
         return "color accident"
-    if count(hand, "mountain") == 0:
+    if count("mountain") == 0:
         return "color accident"
-    if count(hand, "land") == 2 and count(hand, "two_drop") == 0:
+    if count("land") == 2 and count("two_drop") == 0:
         return "2_land_non_2_drop"
-    if count(hand, "land") == 2:
+    if count("land") == 2:
         return "2_land"
-    if count(hand, "two_drop") == 0:
+    if count("two_drop") == 0:
         return "non_2_drop"
     return "good"
 
@@ -60,8 +61,8 @@ def simulate(deck):
 
         ev = eval(hand)
         score[ev] = score.get(ev, 0) + 1
-    ans = sorted(score.items(), reverse=True, key=lambda x: x[1])
-    pprint(ans)
+    #    ans = sorted(score.items(), reverse=True, key=lambda x: x[1])
+    return score
 
 
 def to_deck(deck):
@@ -76,16 +77,27 @@ def to_deck(deck):
     return ans
 
 
+def diff(a: dict, b):
+    for x in a.keys() | b.keys():
+        a[x] -= b.get(x, 0)
+
+    return a
+
+
 def explore(deck):
+    pprint("default")
+    base = simulate(to_deck(deck))
+    pprint(base)
+
     for i in range(len(deck)):
         for j in range(len(deck)):
             if i == j:
                 continue
-            newdeck = deck.copy()
+            newdeck = deepcopy(deck)
             newdeck[i][1] += 1
             newdeck[j][1] -= 1
             print(f"+1:{deck[i][0]} -1:{deck[j][0]}")
-            simulate(to_deck(newdeck))
+            pprint(diff(simulate(to_deck(newdeck)), base))
 
 
 deck = [[MOUNTAIN, 8], [PLAIN, 8], [TWODROP, 6], [{"nonland"}, 18]]
