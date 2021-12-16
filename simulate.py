@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import random
 from copy import copy
+from pprint import pprint
 
 words = set()
 NONLAND = {"nonland"}
@@ -59,7 +60,8 @@ def simulate(deck):
 
         ev = eval(hand)
         score[ev] = score.get(ev, 0) + 1
-    print(sorted(score.items(), reverse=True, key=lambda x: x[1]))
+    ans = sorted(score.items(), reverse=True, key=lambda x: x[1])
+    pprint(ans)
 
 
 def to_deck(deck):
@@ -82,7 +84,7 @@ def explore(deck):
             newdeck = deck.copy()
             newdeck[i][1] += 1
             newdeck[j][1] -= 1
-            print("below result of ", newdeck)
+            print(f"+1:{deck[i][0]} -1:{deck[j][0]}")
             simulate(to_deck(newdeck))
 
 
